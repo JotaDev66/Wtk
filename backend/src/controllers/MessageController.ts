@@ -9,9 +9,11 @@ import ShowTicketService from "../services/TicketServices/ShowTicketService";
 import DeleteWhatsAppMessage from "../services/WbotServices/DeleteWhatsAppMessage";
 import SendWhatsAppMedia from "../services/WbotServices/SendWhatsAppMedia";
 import SendWhatsAppMessage from "../services/WbotServices/SendWhatsAppMessage";
+import ListFindMessagesService from "../services/MessageServices/ListFindMessagesServices";
 
 type IndexQuery = {
   pageNumber: string;
+  searchParam: string;
 };
 
 type MessageData = {
@@ -34,6 +36,35 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
 
   return res.json({ count, messages, ticket, hasMore });
 };
+
+export const list = async (req: Request, res: Response): Promise<Response> => {
+
+  const { ticketId } = req.params;
+  const { pageNumber, searchParam } = req.query as IndexQuery;
+
+  try {
+
+    const { messages, hasMore, count, time } = await ListFindMessagesService({ ticketId, pageNumber, searchParam })
+
+    return res.status(200).json({
+      messages: messages,
+      hasMore,
+      count,
+      // countTotalMessages: countTotalMessages,
+      time: time
+    })
+
+
+  } catch (error) {
+
+    return res.status(500).json({
+      error: error,
+      status: '500 Internal Server'
+    })
+  }
+
+
+}
 
 export const store = async (req: Request, res: Response): Promise<Response> => {
   const { ticketId } = req.params;
@@ -73,3 +104,4 @@ export const remove = async (
 
   return res.send();
 };
+
